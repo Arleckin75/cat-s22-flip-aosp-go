@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build TrebleApp and the system image. Run after sync, apply-patches and
-# install-device (or use scripts/all.sh).
+# install-device (or use scripts/run.sh).
 set -eo pipefail
 source "$(dirname "$0")/env.sh"
 export USE_CCACHE="${USE_CCACHE:-1}" CCACHE_COMPRESS=1

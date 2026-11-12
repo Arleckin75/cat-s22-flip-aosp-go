@@ -8,10 +8,10 @@ These were checked on the reference build host:
 - RAM: 24 GiB plus 4 GiB swap worked. Soong's graph analysis peaks near 20 GiB.
   Patches cap Soong's Go heap at 12 GiB (`GOMEMLIMIT`), see
   `patches/build/soong`.
-- CPU: 8 cores or more. A clean build took about 3.5 hours on 10 cores
-  without ccache.
-- Disk: about 220 GB for the tree (about 70 GB of it is `.repo`), plus about
-  10 GB for the stock work directory.
+- CPU: 8 cores or more. A full `scripts/run.sh` from a fresh clone (download,
+  sync, build, package) took about 4 hours on 10 cores without ccache.
+- Disk: about 190 GB for the tree after a build, plus about 7 GB for the
+  stock work directory.
 - Packages: the standard AOSP build dependencies, plus `repo`, `git-lfs`,
   `brotli`, `e2fsprogs` (for `debugfs`), `curl`, `python3` and OpenJDK 17.
   Pillow is only needed for the optional `scripts/make-bootanimation.py`.
@@ -89,3 +89,17 @@ the same.
 | `super.img` | `super` (fastbootd) |
 
 See [FLASHING.md](FLASHING.md).
+
+## Checking your result
+
+A full run from a fresh clone was compared file by file with the reference
+image. `vendor`, the kernel, DTB and ramdisk, and every file in `system` are
+the same, except:
+
+- the build dates in the three `build.prop` files;
+- `system/lib/libminikin.so`. Its CFI/LTO object code depends on the absolute
+  path of the source tree, so it differs when the tree is not at the same
+  path. The same tree path gives the same bytes.
+
+`boot.img` may differ only in the 20-byte `id` field of its header; the
+bootloader does not check it on an unlocked phone.
