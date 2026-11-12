@@ -1,0 +1,45 @@
+# Development build: native services use AOSP's userdebug su domain.
+# Do not add upstream's blanket permissive rules for priv_app.
+service cat_s22_keypad /system/bin/cat_s22_keypad
+    class late_start
+    user root
+    group root input
+    seclabel u:r:su:s0
+    disabled
+
+# Cover display: lid, calls, missed calls and SMS. Settings come from the
+# CatS22Cover app; persist.cat.s22.outer=0 stops the service entirely.
+service cat_s22_outer /system/bin/cat_s22_cover
+    class late_start
+    user root
+    group root graphics
+    seclabel u:r:su:s0
+    disabled
+
+service cat_s22_keylight /system/bin/cat_s22_keylight
+    class late_start
+    user root
+    group root
+    seclabel u:r:su:s0
+    disabled
+
+on property:sys.boot_completed=1 && property:persist.cat.s22.keylight=1
+    start cat_s22_keylight
+
+on property:persist.cat.s22.keylight=0
+    stop cat_s22_keylight
+
+on property:sys.boot_completed=1 && property:persist.cat.s22.keypad=1
+    start cat_s22_keypad
+
+on property:persist.cat.s22.keypad=0
+    stop cat_s22_keypad
+
+on property:sys.boot_completed=1 && property:persist.cat.s22.outer=1
+    start cat_s22_outer
+
+on property:persist.cat.s22.outer=0
+    stop cat_s22_outer
+
+on property:sys.boot_completed=1
+    exec_background u:r:su:s0 root root -- /system/bin/sh /system/bin/cat-s22-settings.sh

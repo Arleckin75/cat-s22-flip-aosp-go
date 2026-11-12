@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">Внешний экран</string>
+    <string name="summary">Часы, звонки и сообщения на внешнем экране</string>
+    <string name="pref_enabled">Использовать внешний экран</string>
+    <string name="pref_enabled_summary">Включается при закрытии крышки, звонках и новых сообщениях</string>
+    <string name="pref_timeout">Время показа</string>
+    <string name="cat_brightness">Яркость</string>
+    <string name="pref_bright_day">Днём</string>
+    <string name="pref_bright_night">Ночью</string>
+    <string name="pref_night_start">Ночь начинается в</string>
+    <string name="pref_night_end">Ночь заканчивается в</string>
+    <string name="cat_show">Показывать</string>
+    <string name="pref_show_call">Звонки</string>
+    <string name="pref_show_call_summary">Имя или номер во время входящего вызова и разговора</string>
+    <string name="pref_show_missed">Пропущенные вызовы</string>
+    <string name="pref_show_sms">Непрочитанные SMS</string>
+    <string name="pref_sms_text">Текст сообщения</string>
+    <string name="pref_sms_text_summary">Показывать последнее сообщение вместо отправителя</string>
+    <string name="cover_incoming">Входящий вызов</string>
+    <string name="cover_call">Разговор</string>
+    <string name="cover_unknown">Неизвестный</string>
+    <string name="cover_no_service">Нет сети</string>
+    <string name="cat_lid">Крышка</string>
+    <string name="pref_lid_answer">Отвечать на звонок при открытии</string>
+    <string name="pref_lid_end">Завершать разговор при закрытии</string>
+    <string name="pref_lid_end_summary">Не включайте, если закрываете крышку, говоря через гарнитуру или громкую связь</string>
+    <string name="cat_key">Программируемая кнопка</string>
+    <string name="pref_key_short">Нажатие</string>
+    <string name="pref_key_long">Нажатие с удержанием</string>
+    <string name="ringer_normal">Звук включён</string>
+    <string name="ringer_vibrate">Вибрация</string>
+    <string name="ringer_silent">Без звука</string>
+
+    <string-array name="timeout_entries">
+        <item>5 секунд</item>
+        <item>10 секунд</item>
+        <item>15 секунд</item>
+        <item>30 секунд</item>
+        <item>1 минута</item>
+    </string-array>
+    <string-array name="brightness_entries">
+        <item>Минимальная</item>
+        <item>Низкая</item>
+        <item>Средняя</item>
+        <item>Высокая</item>
+        <item>Максимальная</item>
+    </string-array>
+    <string-array name="key_action_entries">
+        <item>Звук, вибрация, без звука</item>
+        <item>Фонарик</item>
+        <item>Камера</item>
+        <item>Ничего</item>
+    </string-array>
+</resources>

@@ -1,0 +1,4 @@
+# Everything is LF in the repository and in checkouts; the scripts run on Linux.
+* text=auto eol=lf
+# Patches must keep their exact bytes (some touch CRLF files).
+*.patch -text

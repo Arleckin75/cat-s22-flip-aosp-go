@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android Go: the device has little RAM (see go_handheld_core_hardware.xml). -->
+<permissions>
+    <feature name="android.hardware.ram.low" />
+</permissions>

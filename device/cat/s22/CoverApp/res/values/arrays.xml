@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="timeout_values" translatable="false">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+    <!-- lcd-backlight2 levels, 1..255 -->
+    <string-array name="brightness_values" translatable="false">
+        <item>8</item>
+        <item>25</item>
+        <item>96</item>
+        <item>192</item>
+        <item>255</item>
+    </string-array>
+    <!-- KeyActions.run() -->
+    <string-array name="key_action_values" translatable="false">
+        <item>ringer</item>
+        <item>torch</item>
+        <item>camera</item>
+        <item>none</item>
+    </string-array>
+    <string-array name="hour_entries" translatable="false">
+        <item>00:00</item><item>01:00</item><item>02:00</item><item>03:00</item>
+        <item>04:00</item><item>05:00</item><item>06:00</item><item>07:00</item>
+        <item>08:00</item><item>09:00</item><item>10:00</item><item>11:00</item>
+        <item>12:00</item><item>13:00</item><item>14:00</item><item>15:00</item>
+        <item>16:00</item><item>17:00</item><item>18:00</item><item>19:00</item>
+        <item>20:00</item><item>21:00</item><item>22:00</item><item>23:00</item>
+    </string-array>
+    <string-array name="hour_values" translatable="false">
+        <item>0</item><item>1</item><item>2</item><item>3</item><item>4</item><item>5</item>
+        <item>6</item><item>7</item><item>8</item><item>9</item><item>10</item><item>11</item>
+        <item>12</item><item>13</item><item>14</item><item>15</item><item>16</item><item>17</item>
+        <item>18</item><item>19</item><item>20</item><item>21</item><item>22</item><item>23</item>
+    </string-array>
+</resources>

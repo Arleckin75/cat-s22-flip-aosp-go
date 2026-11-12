@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Wed, 31 Mar 2021 23:36:03 +0200
+Subject: [PATCH 04/16] Remove Samsung system permission on sensors
+
+
+diff --git a/libs/sensor/Sensor.cpp b/libs/sensor/Sensor.cpp
+index 797efbe..5295af9 100644
+--- a/libs/sensor/Sensor.cpp
++++ b/libs/sensor/Sensor.cpp
+@@ -443,6 +443,7 @@ const String8& Sensor::getStringType() const {
+ }
+ 
+ const String8& Sensor::getRequiredPermission() const {
++    if (mRequiredPermission == "com.samsung.permission.SSENSOR") return mFakeRequiredPermission;
+     return mRequiredPermission;
+ }
+ 
+diff --git a/libs/sensor/include/sensor/Sensor.h b/libs/sensor/include/sensor/Sensor.h
+index bae8a13..afaafb3 100644
+--- a/libs/sensor/include/sensor/Sensor.h
++++ b/libs/sensor/include/sensor/Sensor.h
+@@ -125,6 +125,7 @@ private:
+     uint32_t mFifoMaxEventCount;
+     String8 mStringType;
+     String8 mRequiredPermission;
++    String8 mFakeRequiredPermission;
+     bool mRequiredPermissionRuntime = false;
+     int32_t mRequiredAppOp;
+     int32_t mMaxDelay;

@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Thu, 12 Nov 2026 06:57:45 +0000
+Subject: [PATCH 56/56] PhoneWindowManager: send the CAT S22 programmable key
+ to the cover app
+
+The keypad daemon reports the programmable key (KEY_NUMERIC_B, which
+Android has no keycode for) as MACRO_1 for a short press and MACRO_2 for
+a long press. Broadcast them to cats22.cover, which runs the action the
+user picked; the keys stay hidden from apps as before.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Change-Id: Ic2692d8273c4cca45b60c829be80aebf74f22b9c
+
+diff --git a/services/core/java/com/android/server/policy/PhoneWindowManager.java b/services/core/java/com/android/server/policy/PhoneWindowManager.java
+index 3b43f36b7..8416e4bf6 100644
+--- a/services/core/java/com/android/server/policy/PhoneWindowManager.java
++++ b/services/core/java/com/android/server/policy/PhoneWindowManager.java
+@@ -5664,6 +5664,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+             }
+             case KeyEvent.KEYCODE_MACRO_1:
+             case KeyEvent.KEYCODE_MACRO_2:
++                // CAT S22 programmable key: the keypad daemon sends a short press as
++                // MACRO_1 and a long press as MACRO_2. The cover app runs the action,
++                // whatever has focus and also with the screen off.
++                if (down && event.getRepeatCount() == 0) {
++                    final boolean longPress = keyCode == KeyEvent.KEYCODE_MACRO_2;
++                    mHandler.post(() -> {
++                        Intent intent = new Intent("cats22.cover.action.PROGRAMMABLE_KEY")
++                                .setPackage("cats22.cover")
++                                .putExtra("long_press", longPress)
++                                .addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
++                        mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
++                    });
++                }
++                result &= ~ACTION_PASS_TO_USER;
++                break;
+             case KeyEvent.KEYCODE_MACRO_3:
+             case KeyEvent.KEYCODE_MACRO_4:
+                 result &= ~ACTION_PASS_TO_USER;

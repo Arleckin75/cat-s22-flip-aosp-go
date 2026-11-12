@@ -1,0 +1,2 @@
+# System-installed IMS must not inherit V30's vendor-only qtelephony context.
+user=_app seinfo=platform name=org.codeaurora.ims isPrivApp=true minTargetSdkVersion=29 domain=priv_app type=app_data_file levelFrom=all

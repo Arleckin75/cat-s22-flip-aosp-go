@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="enabled"
+        android:title="@string/pref_enabled"
+        android:summary="@string/pref_enabled_summary"
+        android:defaultValue="true" />
+
+    <ListPreference
+        android:key="timeout_s"
+        android:dependency="enabled"
+        android:title="@string/pref_timeout"
+        android:summary="%s"
+        android:entries="@array/timeout_entries"
+        android:entryValues="@array/timeout_values"
+        android:defaultValue="10" />
+
+    <PreferenceCategory android:title="@string/cat_brightness">
+        <ListPreference
+            android:key="bright_day"
+            android:dependency="enabled"
+            android:title="@string/pref_bright_day"
+            android:summary="%s"
+            android:entries="@array/brightness_entries"
+            android:entryValues="@array/brightness_values"
+            android:defaultValue="192" />
+        <ListPreference
+            android:key="bright_night"
+            android:dependency="enabled"
+            android:title="@string/pref_bright_night"
+            android:summary="%s"
+            android:entries="@array/brightness_entries"
+            android:entryValues="@array/brightness_values"
+            android:defaultValue="25" />
+        <ListPreference
+            android:key="night_start"
+            android:dependency="enabled"
+            android:title="@string/pref_night_start"
+            android:summary="%s"
+            android:entries="@array/hour_entries"
+            android:entryValues="@array/hour_values"
+            android:defaultValue="22" />
+        <ListPreference
+            android:key="night_end"
+            android:dependency="enabled"
+            android:title="@string/pref_night_end"
+            android:summary="%s"
+            android:entries="@array/hour_entries"
+            android:entryValues="@array/hour_values"
+            android:defaultValue="7" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/cat_show">
+        <SwitchPreference
+            android:key="show_call"
+            android:dependency="enabled"
+            android:title="@string/pref_show_call"
+            android:summary="@string/pref_show_call_summary"
+            android:defaultValue="true" />
+        <SwitchPreference
+            android:key="show_missed"
+            android:dependency="enabled"
+            android:title="@string/pref_show_missed"
+            android:defaultValue="true" />
+        <SwitchPreference
+            android:key="show_sms"
+            android:dependency="enabled"
+            android:title="@string/pref_show_sms"
+            android:defaultValue="true" />
+        <SwitchPreference
+            android:key="sms_text"
+            android:dependency="show_sms"
+            android:title="@string/pref_sms_text"
+            android:summary="@string/pref_sms_text_summary"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+    <!-- Not tied to the cover screen switch. -->
+    <PreferenceCategory android:title="@string/cat_lid">
+        <SwitchPreference
+            android:key="lid_answer"
+            android:title="@string/pref_lid_answer"
+            android:defaultValue="true" />
+        <SwitchPreference
+            android:key="lid_end"
+            android:title="@string/pref_lid_end"
+            android:summary="@string/pref_lid_end_summary"
+            android:defaultValue="false" />
+    </PreferenceCategory>
+
+    <!-- Works with the lid open or closed; not tied to the cover screen switch. -->
+    <PreferenceCategory android:title="@string/cat_key">
+        <ListPreference
+            android:key="key_short"
+            android:title="@string/pref_key_short"
+            android:summary="%s"
+            android:entries="@array/key_action_entries"
+            android:entryValues="@array/key_action_values"
+            android:defaultValue="ringer" />
+        <ListPreference
+            android:key="key_long"
+            android:title="@string/pref_key_long"
+            android:summary="%s"
+            android:entries="@array/key_action_entries"
+            android:entryValues="@array/key_action_values"
+            android:defaultValue="torch" />
+    </PreferenceCategory>
+</PreferenceScreen>

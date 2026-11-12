@@ -1,0 +1,6 @@
+# CatS22Cover (platform_app) follows the lid through the switch_hall uevents.
+# Receiving kernel uevents only; app domains may never write them.
+allow platform_app self:netlink_kobject_uevent_socket { create bind read setopt getopt };
+# UEventObserver asks for a larger receive buffer (SO_RCVBUFFORCE) and carries
+# on with the default when that is refused.
+dontaudit platform_app self:capability net_admin;

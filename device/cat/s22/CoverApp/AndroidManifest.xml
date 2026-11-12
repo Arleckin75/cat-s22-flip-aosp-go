@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="cats22.cover">
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Programmable key actions (KeyActions). STATUS_BAR_SERVICE is what
+         AudioManager.setRingerModeInternal checks; signature, so the platform
+         certificate grants it, like START_ACTIVITIES_FROM_BACKGROUND. -->
+    <uses-permission android:name="android.permission.STATUS_BAR_SERVICE" />
+    <uses-permission android:name="android.permission.START_ACTIVITIES_FROM_BACKGROUND" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- LidActions: TelecomManager.acceptRingingCall/endCall (signature|privileged). -->
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+
+    <!-- Persistent and direct-boot aware: the cover screen must work from boot,
+         before the first unlock, and must not be killed in the background. -->
+    <application
+        android:name=".CoverApp"
+        android:label="@string/title"
+        android:persistent="true"
+        android:directBootAware="true"
+        android:defaultToDeviceProtectedStorage="true"
+        android:allowBackup="false"
+        android:theme="@android:style/Theme.DeviceDefault.DayNight">
+
+        <!-- Injected into Settings > Display. -->
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.settings.action.IA_SETTINGS" />
+            </intent-filter>
+            <meta-data
+                android:name="com.android.settings.category"
+                android:value="com.android.settings.category.ia.display" />
+            <meta-data
+                android:name="com.android.settings.summary"
+                android:resource="@string/summary" />
+        </activity>
+    </application>
+</manifest>

@@ -1,0 +1,16 @@
+// Companion app for the cover display service (cat_s22_cover): call, missed
+// call, SMS and signal state, plus the "Cover screen" settings page.
+android_app {
+    name: "CatS22Cover",
+    srcs: ["src/**/*.java"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+    platform_apis: true,
+    certificate: "platform",
+    // platform_apis are not allowed on product; system_ext is the device's
+    // place for platform-API system apps.
+    system_ext_specific: true,
+    optimize: {
+        enabled: false,
+    },
+}

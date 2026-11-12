@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">Cover screen</string>
+    <string name="summary">Clock, calls and messages on the outer display</string>
+    <string name="pref_enabled">Use cover screen</string>
+    <string name="pref_enabled_summary">Turns on when the lid closes, on calls and new messages</string>
+    <string name="pref_timeout">Show for</string>
+    <string name="cat_brightness">Brightness</string>
+    <string name="pref_bright_day">Day</string>
+    <string name="pref_bright_night">Night</string>
+    <string name="pref_night_start">Night starts at</string>
+    <string name="pref_night_end">Night ends at</string>
+    <string name="cat_show">Show</string>
+    <string name="pref_show_call">Calls</string>
+    <string name="pref_show_call_summary">Name or number while a call rings and during the call</string>
+    <string name="pref_show_missed">Missed calls</string>
+    <string name="pref_show_sms">Unread SMS</string>
+    <string name="pref_sms_text">Message text</string>
+    <string name="pref_sms_text_summary">Show the latest message instead of the sender</string>
+    <string name="cover_incoming">Incoming call</string>
+    <string name="cover_call">Call</string>
+    <string name="cover_unknown">Unknown</string>
+    <string name="cover_no_service">No service</string>
+    <string name="cat_lid">Lid</string>
+    <string name="pref_lid_answer">Answer by opening the lid</string>
+    <string name="pref_lid_end">End the call by closing the lid</string>
+    <string name="pref_lid_end_summary">Turn off if you close the lid to talk on a headset or speaker</string>
+    <string name="cat_key">Programmable key</string>
+    <string name="pref_key_short">Press</string>
+    <string name="pref_key_long">Press and hold</string>
+    <string name="ringer_normal">Sound on</string>
+    <string name="ringer_vibrate">Vibrate</string>
+    <string name="ringer_silent">Silent</string>
+
+    <string-array name="timeout_entries">
+        <item>5 seconds</item>
+        <item>10 seconds</item>
+        <item>15 seconds</item>
+        <item>30 seconds</item>
+        <item>1 minute</item>
+    </string-array>
+    <string-array name="brightness_entries">
+        <item>Minimum</item>
+        <item>Low</item>
+        <item>Medium</item>
+        <item>High</item>
+        <item>Maximum</item>
+    </string-array>
+    <string-array name="key_action_entries">
+        <item>Sound, vibrate, silent</item>
+        <item>Flashlight</item>
+        <item>Camera</item>
+        <item>Nothing</item>
+    </string-array>
+</resources>

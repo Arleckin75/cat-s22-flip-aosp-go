@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Sat, 25 Nov 2023 09:51:14 -0500
+Subject: [PATCH 22/28] Keep our own version of ro.logd.kernel. We do want
+ logcat -b kernel, unlike what OEM set from their vendor
+
+
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index acd7aa2..4b88fc1 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -813,7 +813,7 @@ static void LoadProperties(char* data, const char* filter, const char* filename,
+                                  << "' with new value '" << value << "'";
+                     if(strcmp("ro.apex.updatable", key) == 0 && !kernel_supports_capex()) {
+                         LOG(WARNING) << "... Ignored apex by kernel version";
+-                    } else if(strstr(key, "adb") || strstr(key, "secure")) {
++                    } else if(strstr(key, "adb") || strstr(key, "secure") || strstr(key, "ro.logd.kernel")) {
+                         LOG(WARNING) << "... Ignored";
+                     } else {
+                         it->second = value;

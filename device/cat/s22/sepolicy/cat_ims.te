@@ -1,0 +1,4 @@
+# Narrow IPC rules from the upstream adaptation; no permissive priv_app.
+allow priv_app rild:binder { call transfer };
+allow rild priv_app:binder { call transfer };
+allow priv_app rild:fd use;

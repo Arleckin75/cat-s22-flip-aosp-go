@@ -1,0 +1,8 @@
+# Firmware images and archives are proprietary or huge; never commit them.
+*.img
+*.zip
+*.apk
+*.tgz
+*.br
+*.dat
+__pycache__/

@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Sat, 1 Jan 2000 00:00:00 +0000
+Subject: [PATCH] CAT S22: local build adaptation
+
+
+diff --git a/base.mk b/base.mk
+index 56d03d3..cfc0f76 100644
+--- a/base.mk
++++ b/base.mk
+@@ -21,7 +21,9 @@ SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += device/phh/treble/sepolicy
+ PRODUCT_PACKAGE_OVERLAYS += device/phh/treble/overlay
+ 
+ $(call inherit-product, vendor/hardware_overlay/overlay.mk)
++ifneq ($(TARGET_GAPPS_ARCH),arm)
+ $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
++endif
+ $(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base_telephony.mk)
+ 
+ # Those overrides are here because Huawei's init read properties
+@@ -33,7 +35,6 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+     ro.build.version.all_codenames=$(PLATFORM_VERSION_ALL_CODENAMES) \
+     ro.build.version.release=$(PLATFORM_VERSION) \
+     ro.build.version.security_patch=$(PLATFORM_SECURITY_PATCH) \
+-    ro.adb.secure=0 \
+     ro.logd.auditd=true \
+     ro.logd.kernel=true \
+ 
+diff --git a/system.prop b/system.prop
+index f3c0c45..b2bcf63 100644
+--- a/system.prop
++++ b/system.prop
+@@ -1,4 +1,3 @@
+-ro.adb.secure=0
+ #Some devices have sdcardfs kernel panicing on 8.0
+ #Disable for everyone for the moment
+ ro.sys.sdcardfs=0

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Sat, 1 Jan 2000 00:00:00 +0000
+Subject: [PATCH] CAT S22: local build adaptation
+
+
+diff --git a/ui/build/soong.go b/ui/build/soong.go
+index 58334a9..fcb2df7 100644
+--- a/ui/build/soong.go
++++ b/ui/build/soong.go
+@@ -214,6 +214,8 @@ func (pb PrimaryBuilderFactory) primaryBuilderInvocation(config Config) bootstra
+ 
+ 	commonArgs = append(commonArgs, "-l", filepath.Join(pb.config.FileListDir(), "Android.bp.list"))
+ 	invocationEnv := make(map[string]string)
++	invocationEnv["GOMEMLIMIT"] = "12GiB"
++	invocationEnv["GOGC"] = "50"
+ 	if pb.debugPort != "" {
+ 		//debug mode
+ 		commonArgs = append(commonArgs, "--delve_listen", pb.debugPort,

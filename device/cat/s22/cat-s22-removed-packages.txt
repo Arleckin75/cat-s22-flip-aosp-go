@@ -1,0 +1,14 @@
+# Preinstalled apps removed from this build (device/cat/s22/Android.mk).
+EasterEgg
+BasicDreams
+PhotoTable
+LiveWallpapersPicker
+BuiltInPrintService
+PrintRecommendationService
+DeviceAsWebcam
+AvatarPicker
+MtkInCallService
+DeviceDiagnostics
+ApertureLensLauncher
+DynamicSystemInstallationService
+Tag

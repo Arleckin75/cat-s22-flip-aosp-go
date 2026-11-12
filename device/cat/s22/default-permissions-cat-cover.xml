@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CatS22Cover reads call state, the call log, unread SMS and contact names
+     only to show them on the cover display. Nothing leaves the phone. -->
+<exceptions>
+    <exception package="cats22.cover">
+        <permission name="android.permission.READ_PHONE_STATE" fixed="false"/>
+        <permission name="android.permission.READ_CALL_LOG" fixed="false"/>
+        <permission name="android.permission.READ_SMS" fixed="false"/>
+        <permission name="android.permission.READ_CONTACTS" fixed="false"/>
+    </exception>
+</exceptions>

@@ -1,0 +1,48 @@
+cc_defaults {
+    name: "cat_s22_native_defaults",
+    compile_multilib: "32",
+    cflags: ["-Wall", "-Wno-unused-function", "-Wno-unused-variable"],
+}
+vintf_compatibility_matrix {
+    name: "cat_s22_fcm4",
+    stem: "compatibility_matrix.4.xml",
+    srcs: ["compatibility_matrix.4.xml"],
+}
+cc_binary {
+    name: "cat_s22_keypad",
+    defaults: ["cat_s22_native_defaults"],
+    srcs: ["keypad.c"],
+}
+cc_binary {
+    name: "cat_s22_keylight",
+    defaults: ["cat_s22_native_defaults"],
+    srcs: ["keylight.c"],
+}
+// Cover (outer) display service; replaces the upstream always-on renderer and
+// the old lid controller. Font: cover/cover_font.h (Roboto, Apache 2.0).
+cc_binary {
+    name: "cat_s22_cover",
+    defaults: ["cat_s22_native_defaults"],
+    srcs: ["cover/cover.c"],
+}
+// Stock CAT camera from the builder's own V30 product partition (extracted by
+// install-device.py; proprietary, never stored in this repository). As a
+// preinstalled app it gets MANAGE_EXTERNAL_STORAGE (signature|appop|preinstalled).
+android_app_import {
+    name: "CatS22Camera",
+    apk: "TED2Camera.apk",
+    presigned: true,
+    // targetSdk 30 with CAT's signature: install byte-for-byte as shipped.
+    preprocessed: true,
+    product_specific: true,
+    dex_preopt: { enabled: false },
+    overrides: ["Camera2"],
+}
+android_app_import {
+    name: "CatS22Ims",
+    apk: "ims.apk",
+    certificate: "platform",
+    privileged: true,
+    dex_preopt: { enabled: false },
+    enforce_uses_libs: false,
+}

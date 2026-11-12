@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stock CAT camera: grant what it needs to open the camera and record video,
+     as on stock firmware. Location (photo geotags) stays the user's choice. -->
+<exceptions>
+    <exception package="com.android.camera">
+        <permission name="android.permission.CAMERA" fixed="false"/>
+        <permission name="android.permission.RECORD_AUDIO" fixed="false"/>
+    </exception>
+</exceptions>

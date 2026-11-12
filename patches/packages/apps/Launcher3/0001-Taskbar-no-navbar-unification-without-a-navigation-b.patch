@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Sun, 8 Nov 2026 13:33:08 +0000
+Subject: [PATCH] Taskbar: no navbar unification without a navigation bar
+
+Devices with hardware navigation keys report hasNavigationBar=false; the phone taskbar then drew back/home/recents buttons over app content. Only unify the navbar when the window manager actually has one.
+
+Change-Id: I7f70c35b59c50364c3ff69b5fc3a8f9ec4735713
+
+diff --git a/quickstep/src/com/android/launcher3/taskbar/TaskbarManager.java b/quickstep/src/com/android/launcher3/taskbar/TaskbarManager.java
+index f3cbdb5..126b3a0 100644
+--- a/quickstep/src/com/android/launcher3/taskbar/TaskbarManager.java
++++ b/quickstep/src/com/android/launcher3/taskbar/TaskbarManager.java
+@@ -50,6 +50,7 @@ import android.content.res.Configuration;
+ import android.hardware.display.DisplayManager;
+ import android.net.Uri;
+ import android.os.Handler;
++import android.os.RemoteException;
+ import android.os.Trace;
+ import android.provider.Settings;
+ import android.util.ArraySet;
+@@ -59,6 +60,7 @@ import android.util.SparseBooleanArray;
+ import android.view.Display;
+ import android.view.MotionEvent;
+ import android.view.WindowManager;
++import android.view.WindowManagerGlobal;
+ import android.widget.FrameLayout;
+ import android.window.DesktopExperienceFlags;
+ 
+@@ -904,7 +906,22 @@ public class TaskbarManager implements DisplayDecorationListener {
+     }
+ 
+     private boolean isTaskbarEnabled(DeviceProfile deviceProfile) {
+-        return ENABLE_TASKBAR_NAVBAR_UNIFICATION || deviceProfile.isTaskbarPresent;
++        return (ENABLE_TASKBAR_NAVBAR_UNIFICATION && deviceHasNavigationBar())
++                || deviceProfile.isTaskbarPresent;
++    }
++
++    /**
++     * Navbar unification draws the navigation buttons in the launcher taskbar window. Devices
++     * with hardware navigation keys (config_showNavigationBar=false or qemu.hw.mainkeys=1) have
++     * no navigation bar for the taskbar to replace, so it must not be drawn over app content.
++     */
++    private boolean deviceHasNavigationBar() {
++        try {
++            return WindowManagerGlobal.getWindowManagerService()
++                    .hasNavigationBar(getDefaultDisplayId());
++        } catch (RemoteException e) {
++            return true;
++        }
+     }
+ 
+     public void onRotationProposal(int rotation, boolean isValid) {

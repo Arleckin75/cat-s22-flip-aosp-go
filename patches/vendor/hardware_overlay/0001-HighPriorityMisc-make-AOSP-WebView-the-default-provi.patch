@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 port <noreply@example.invalid>
+Date: Thu, 12 Nov 2026 01:12:42 +0000
+Subject: [PATCH] HighPriorityMisc: make AOSP WebView the default provider
+
+Android 15 WebViewUpdateServiceImpl2 takes the first availableByDefault
+provider in the list as the default and uses only that one when the user
+has not chosen another. AOSP builds ship no Google WebView, so with Google
+WebView listed first no WebView loads at all. List AOSP WebView first.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+diff --git a/HighPriorityMisc/res/xml/config_webview_packages.xml b/HighPriorityMisc/res/xml/config_webview_packages.xml
+index 8007e93..10c59e4 100644
+--- a/HighPriorityMisc/res/xml/config_webview_packages.xml
++++ b/HighPriorityMisc/res/xml/config_webview_packages.xml
+@@ -18,6 +18,9 @@
+ <!-- Signature checks are ignored if the package is preinstalled or if this is a userdebug or eng
+     build. If no signature is provided, the package can provide a WebView implementation only on userdebug/eng builds or if it's preinstalled -->
+ <webviewproviders>
++    <webviewprovider description="AOSP WebView" packageName="com.android.webview" availableByDefault="true">
++        <!-- Ignore this package on user/release builds unless preinstalled. -->
++    </webviewprovider>
+     <webviewprovider description="Google WebView" packageName="com.google.android.webview" availableByDefault="true" isFallback="true">
+         <!-- This provider is marked as a fallback to enable the one-time migration from older OS versions' configurations.
+              It will be automatically re-enabled for all users on first boot only, in case it was previously disabled for
+@@ -36,9 +39,6 @@
+     <webviewprovider description="Google WebView Debug" packageName="com.google.android.webview.debug" availableByDefault="true">
+         <!-- Ignore this package on user/release builds unless preinstalled. -->
+     </webviewprovider>
+-    <webviewprovider description="AOSP WebView" packageName="com.android.webview" availableByDefault="true">
+-        <!-- Ignore this package on user/release builds unless preinstalled. -->
+-    </webviewprovider>
+     <webviewprovider description="Bromite WebView" packageName="org.bromite.webview" availableByDefault="true">
+ 	    <signature>MIIDbTCCAlWgAwIBAgIEHcsmjjANBgkqhkiG9w0BAQsFADBmMQswCQYDVQQGEwJERTEQMA4GA1UECBMHVW5rbm93bjEPMA0GA1UEBxMGQmVybGluMRAwDgYDVQQKEwdCcm9taXRlMRAwDgYDVQQLEwdCcm9taXRlMRAwDgYDVQQDEwdjc2FnYW41MCAXDTE4MDExOTA3MjE1N1oYDzIwNjgwMTA3MDcyMTU3WjBmMQswCQYDVQQGEwJERTEQMA4GA1UECBMHVW5rbm93bjEPMA0GA1UEBxMGQmVybGluMRAwDgYDVQQKEwdCcm9taXRlMRAwDgYDVQQLEwdCcm9taXRlMRAwDgYDVQQDEwdjc2FnYW41MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtakjGj0eTavbBB2vWXj8KBixWn4zgXAKc+yGFu3SLEGF1VB5aJWwcMHxVI55yH/8M2eNnJP0BkSidfKgPVcm1sk/GrNEs9uk5sWod9byO5M5QWQmGP2REeTd6J0BVVVaMp2MZnqeR3Su3pwFzrSwTqIGyf8dkPSEz7ifj792+EeRNrov4oRQK7lIfqInzwc4d34wU069Lrw6m7J7HM0KbRYISsWMiYj025Qg+dTrtdWt7jbdcj7htW0eYyJoLd90+s43RWnOpENmWpcWv1EVPxUD4mCdV9idYwoHRIESpSu9IWvqDZp1VoRc43nLgsNfNBwmYdTkIaPiz1m7TBcr7QIDAQABoyEwHzAdBgNVHQ4EFgQUuWoGd7W7wMyQ1pOdjiMv10YHTR0wDQYJKoZIhvcNAQELBQADggEBAA7iw6eKz+T8HIpKDoDcX1Ywjn9JUzuCFu20LnsLzreO/Pog1xErYjdLAS7LTZokfbAnitBskO9QhV9BYkDiM0Qr5v2/HsJTtxa1mz9ywCcI36jblMyuXFj8tuwQI9/t9i+Fc3+bOFBV3t7djPo9qX1dIK0lZ6s8HcIhaCNdqm65fH+nWhC/H9djqC6qOtrkTiACKEcHQ4a/5dfROU0q0M4bS4YuiaAQWgjiGbik4LrZ8wZX1aqJCLt0Hs7MzXyyf0cRSO11FIOViHwzh6WTZGufq2J3YBFXPond8kLxkKL3LNezbi5yTcecxsbKQ6OS46CnIKcy/M8asSreLpoCDvw=</signature>
+     </webviewprovider>
