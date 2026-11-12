@@ -70,3 +70,12 @@ scripts/    build steps (run.sh is the entry point)
 tools/      maintainer tools (export_patches.py)
 docs/       building, flashing, hardware notes, maintenance
 ```
+
+## License
+
+The files written for this project (`device/`, `scripts/`, `tools/`, `docs/`
+and the CAT S22 patches) are licensed under the
+[Apache License 2.0](LICENSE). The patches from TrebleDroid and AOSP keep their
+authors' licenses (Apache-2.0). `config/stock-v30-kernel.config` is the
+configuration of CAT's GPL-2.0 kernel. No CAT firmware files are included;
+each builder downloads them from CAT's official OTA packages.
