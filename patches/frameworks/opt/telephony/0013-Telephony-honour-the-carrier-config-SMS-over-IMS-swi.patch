@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Fri, 13 Nov 2026 07:17:43 +0000
+Subject: [PATCH] Telephony: honour the carrier config SMS-over-IMS switch
+
+CarrierConfigManager.ImsSms.KEY_SMS_OVER_IMS_SUPPORTED_BOOL is only read
+by newer ImsService implementations. The CAT S22 Flip IMS (2021 QTI)
+keeps reporting SMS capability, so check the key in ImsSmsDispatcher
+(read as the phone process: it is also reached from binder calls) and in
+SmsDispatchersController.isIms(), whose legacy RIL IMS state would
+otherwise send IMS_SEND_SMS, which this modem rejects.
+
+Change-Id: I2078931ae07e1f73007e4e7a672d663a0c191672
+
+diff --git a/src/java/com/android/internal/telephony/ImsSmsDispatcher.java b/src/java/com/android/internal/telephony/ImsSmsDispatcher.java
+index 76b3a17..46d95f6 100644
+--- a/src/java/com/android/internal/telephony/ImsSmsDispatcher.java
++++ b/src/java/com/android/internal/telephony/ImsSmsDispatcher.java
+@@ -458,10 +458,31 @@ public class ImsSmsDispatcher extends SMSDispatcher {
+     }
+ 
+     public boolean isAvailable() {
++        boolean carrierAllows = isSmsOverImsSupportedByCarrier();
+         synchronized (mLock) {
+             logd("isAvailable: up=" + mIsImsServiceUp + ", reg= " + mIsRegistered
+-                    + ", cap= " + mIsSmsCapable);
+-            return mIsImsServiceUp && mIsRegistered && mIsSmsCapable;
++                    + ", cap= " + mIsSmsCapable + ", carrier= " + carrierAllows);
++            return mIsImsServiceUp && mIsRegistered && mIsSmsCapable && carrierAllows;
++        }
++    }
++
++    /**
++     * Honour {@link CarrierConfigManager.ImsSms.KEY_SMS_OVER_IMS_SUPPORTED_BOOL} on the framework
++     * side as well: older ImsService implementations ignore it and keep reporting SMS capability.
++     */
++    boolean isSmsOverImsSupportedByCarrier() {
++        CarrierConfigManager configManager = mContext.getSystemService(CarrierConfigManager.class);
++        if (configManager == null) return true;
++        // Also reached from binder calls (SmsManager#isImsSmsSupported): read the config as the
++        // phone process, not as the calling app.
++        final long identity = Binder.clearCallingIdentity();
++        try {
++            PersistableBundle config = configManager.getConfigForSubId(getSubId(),
++                    CarrierConfigManager.ImsSms.KEY_SMS_OVER_IMS_SUPPORTED_BOOL);
++            return config == null || config.getBoolean(
++                    CarrierConfigManager.ImsSms.KEY_SMS_OVER_IMS_SUPPORTED_BOOL, true);
++        } finally {
++            Binder.restoreCallingIdentity(identity);
+         }
+     }
+ 
+diff --git a/src/java/com/android/internal/telephony/SmsDispatchersController.java b/src/java/com/android/internal/telephony/SmsDispatchersController.java
+index 43d7eda..cc50fd5 100644
+--- a/src/java/com/android/internal/telephony/SmsDispatchersController.java
++++ b/src/java/com/android/internal/telephony/SmsDispatchersController.java
+@@ -982,7 +982,10 @@ public class SmsDispatchersController extends Handler {
+      *         implementation. Otherwise, false.
+      */
+     public boolean isIms() {
+-        return mImsSmsDispatcher.isAvailable() ? true : mIms;
++        if (mImsSmsDispatcher.isAvailable()) return true;
++        // The legacy RIL IMS state must not bring SMS over IMS back when the carrier config
++        // turned it off.
++        return mIms && mImsSmsDispatcher.isSmsOverImsSupportedByCarrier();
+     }
+ 
+     /**

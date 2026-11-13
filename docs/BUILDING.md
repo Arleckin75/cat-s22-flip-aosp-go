@@ -73,7 +73,7 @@ it before running a script:
 
 `tools/verify_patches.sh <tree>` replays every series in a temporary worktree
 and compares the resulting git tree hash with a reference tree. The current
-set reproduces the reference tree exactly for all 30 projects.
+set reproduces the reference tree exactly for all 32 projects.
 
 ## Output
 

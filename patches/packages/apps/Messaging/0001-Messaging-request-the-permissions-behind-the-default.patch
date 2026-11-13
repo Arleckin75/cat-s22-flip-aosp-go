@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Fri, 13 Nov 2026 06:43:05 +0000
+Subject: [PATCH] Messaging: request the permissions behind the default SMS app
+ ops
+
+Android 16 SmsApplication drops a default SMS app unless all of its
+exclusive app ops are allowed ("lost android:receive_wap_push",
+"lost android:read_cell_broadcasts"). Those two ops are backed by
+permissions that AOSP Messaging never requested, so it received SMS but
+refused to send (isDefaultSmsApp=false). The SMS role grants both.
+
+Change-Id: I8f0374597de5587a6491a9112455421d8b9ade14
+
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index fffcdab..4f25def 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -28,6 +28,11 @@
+     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+     <uses-permission android:name="android.permission.RECEIVE_MMS"/>
+     <uses-permission android:name="android.permission.SEND_SMS"/>
++    <!-- SmsApplication rejects a default SMS app unless all of its exclusive app
++         ops are allowed. RECEIVE_WAP_PUSH and READ_CELL_BROADCASTS follow these
++         permissions, which the SMS role grants. -->
++    <uses-permission android:name="android.permission.RECEIVE_WAP_PUSH"/>
++    <uses-permission android:name="android.permission.READ_CELL_BROADCASTS"/>
+     <!-- Application needs access to MMS network -->
+     <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

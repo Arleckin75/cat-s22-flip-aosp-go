@@ -26,9 +26,9 @@ enforcing):
 | Wi-Fi | connects, internet and DNS work |
 | Bluetooth | pairing and stereo audio (A2DP, AAC) work with Pixel Buds 2a |
 | SIM, mobile data, LTE | works on A1 Bulgaria: LTE by default, internet over mobile data |
-| VoLTE | registers on A1 Bulgaria (IMS registered, voice and SMS over IMS available). The modem has no A1 profile and uses its generic one; other carriers depend on the modem's profile for them and on the carrier allowing this phone. Call audio over VoLTE not tested yet |
-| Calls, SMS | **not tested yet** |
-| VoWiFi | not tested |
+| VoLTE | works on A1 Bulgaria: calls in both directions with HD voice (AMR-WB), audio in the earpiece and over Bluetooth. The modem has no A1 profile and uses its generic one; other carriers depend on the modem's profile for them and on the carrier allowing this phone |
+| Calls, SMS | incoming and outgoing calls work; answering by opening the lid works; SMS are sent and received. On A1 Bulgaria SMS are sent over CS: over IMS the network does not answer for about a minute |
+| VoWiFi | works on A1 Bulgaria: IMS registers over Wi-Fi while the phone is on the mobile network, calls in both directions. Registering over Wi-Fi in airplane mode failed |
 | Keypad backlight | works: on while the lid is open and the screen is on |
 | Memory | Android Go profile (see [docs/HARDWARE.md](docs/HARDWARE.md)) |
 | Battery life | not measured |
@@ -41,7 +41,7 @@ Details and known issues are in [docs/HARDWARE.md](docs/HARDWARE.md).
 | Part | Source |
 | --- | --- |
 | Android tree | [manifest/cat-s22-aosp16.xml](manifest/cat-s22-aosp16.xml): AOSP `android-16.0.0_r2` plus TrebleDroid, every project pinned to an exact commit |
-| Source changes | [patches/](patches): 208 patches over 30 projects, applied with `git am`. These are the TrebleDroid patches from [ponces/treble_aosp](https://github.com/ponces/treble_aosp) (Apache-2.0) plus five changes for this device |
+| Source changes | [patches/](patches): 211 patches over 32 projects, applied with `git am`. These are the TrebleDroid patches from [ponces/treble_aosp](https://github.com/ponces/treble_aosp) (Apache-2.0) plus eight changes for this device |
 | Device configuration | [device/cat/s22](device/cat/s22): product, init, SELinux, cover-screen service and settings app |
 | Hardware helpers and IMS APK | fetched at build time from [ajimsjames/cat-s22-flip-android15-fixes](https://github.com/ajimsjames/cat-s22-flip-android15-fixes) at a pinned commit. That repository has no license, so its files are not copied here |
 | Stock V30 kernel, vendor, vbmeta | rebuilt by each builder from CAT's official OTA packages; never redistributed |

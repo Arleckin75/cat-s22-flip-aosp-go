@@ -9,9 +9,11 @@ frameworks/av 25
 frameworks/base 56
 frameworks/native 16
 frameworks/opt/net/ims 1
-frameworks/opt/telephony 12
+frameworks/opt/telephony 13
 hardware/interfaces 3
+packages/apps/CarrierConfig 1
 packages/apps/Launcher3 1
+packages/apps/Messaging 1
 packages/apps/Settings 4
 packages/modules/Bluetooth 8
 packages/modules/Connectivity 9

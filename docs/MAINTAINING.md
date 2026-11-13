@@ -41,10 +41,14 @@ To move to newer AOSP or TrebleDroid revisions, follow these steps:
   `android-16.0` (Apache-2.0) at `a908967f`.
 - Patches: ponces/treble_aosp `patches/trebledroid` at the same commit
   (203 patches; only the Launcher3 one needed a manual merge; they include the old-kernel
-  support this 4.9 phone needs), plus five CAT S22 patches: Soong memory
+  support this 4.9 phone needs), plus eight CAT S22 patches: Soong memory
   limits (build/soong), conditional 64-bit inheritance and `ro.adb.secure=0`
   removed (device/phh/treble), the Launcher3 navigation-button fix, AOSP
-  WebView as the default provider (vendor/hardware_overlay), and the
-  programmable key broadcast in PhoneWindowManager (frameworks/base).
+  WebView as the default provider (vendor/hardware_overlay), the
+  programmable key broadcast in PhoneWindowManager (frameworks/base), the
+  permissions Messaging needs to stay the default SMS app
+  (packages/apps/Messaging), SMS over CS for A1 Bulgaria
+  (packages/apps/CarrierConfig) and the framework honouring that carrier
+  config switch (frameworks/opt/telephony).
 - `prebuilts/vndk/v29` carries a TrebleDroid patch with three prebuilt VNDK
   libraries built from AOSP sources (Apache-2.0).

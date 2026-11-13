@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Fri, 13 Nov 2026 07:17:43 +0000
+Subject: [PATCH] CarrierConfig: A1 Bulgaria sends SMS over CS, not IMS
+
+On the CAT S22 Flip an SMS sent over IMS on A1 Bulgaria gets no answer
+for about a minute before the framework falls back to CS, where it is
+delivered at once.
+
+Change-Id: Ia6fc388116e2c8aa28a17d9440e1905e98a99f96
+
+diff --git a/res/xml/vendor.xml b/res/xml/vendor.xml
+index 58a87d8..d7699ec 100644
+--- a/res/xml/vendor.xml
++++ b/res/xml/vendor.xml
+@@ -3,4 +3,12 @@
+      filtering rules are the same as those in carrier_config*.xml files. This
+      file is read after any specific config file from the assets folder, so it
+      must use explicit filters for MCC ad MNC if that is desired. -->
+-<carrier_config_list />
++<carrier_config_list>
++    <!-- A1 Bulgaria on the CAT S22 Flip: the modem has no A1 profile, and an
++         SMS sent over IMS gets no answer for about a minute before the
++         framework falls back to CS. Send over CS directly; incoming SMS over
++         IMS still work. -->
++    <carrier_config mcc="284" mnc="01">
++        <boolean name="imssms.sms_over_ims_supported_bool" value="false"/>
++    </carrier_config>
++</carrier_config_list>
