@@ -24,9 +24,11 @@ enforcing):
 | Camera | stock CAT camera app (extracted from your V30): photo, video, front camera work |
 | Browser (WebView shell) | works |
 | Wi-Fi | connects, internet and DNS work |
-| Bluetooth | turns on; pairing not checked |
-| IMS service | starts and binds to telephony |
-| Calls, SMS, mobile data, VoLTE/VoWiFi | **not tested** (no SIM yet) |
+| Bluetooth | pairing and stereo audio (A2DP, AAC) work with Pixel Buds 2a |
+| SIM, mobile data, LTE | works on A1 Bulgaria: LTE by default, internet over mobile data |
+| VoLTE | registers on A1 Bulgaria (IMS registered, voice and SMS over IMS available). The modem has no A1 profile and uses its generic one; other carriers depend on the modem's profile for them and on the carrier allowing this phone. Call audio over VoLTE not tested yet |
+| Calls, SMS | **not tested yet** |
+| VoWiFi | not tested |
 | Keypad backlight | works: on while the lid is open and the screen is on |
 | Memory | Android Go profile (see [docs/HARDWARE.md](docs/HARDWARE.md)) |
 | Battery life | not measured |

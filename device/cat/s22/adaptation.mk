@@ -21,6 +21,10 @@ PRODUCT_SYSTEM_PROPERTIES += \
     persist.sys.phh.ims.caf=true \
     persist.sys.phh.ims.floss=false
 
+# Without this the framework default (0, GSM/WCDMA) keeps a new SIM off LTE.
+# 9 = LTE/GSM/WCDMA; the modem has no 5G.
+PRODUCT_SYSTEM_PROPERTIES += ro.telephony.default_network=9
+
 # Hardware Back/Home/Menu/App-switch keys: no on-screen navigation bar, as on
 # stock (config_showNavigationBar=false). TrebleDroid forces it on through
 # persist.sys.phh.mainkeys=0 -> qemu.hw.mainkeys; product props load last.

@@ -2,3 +2,7 @@
 allow priv_app rild:binder { call transfer };
 allow rild priv_app:binder { call transfer };
 allow priv_app rild:fd use;
+# org.codeaurora.ims reaches QCRIL through vendor.qti.hardware.radio.ims
+# IImsRadio, which V30 registers under hal_telephony_hwservice. Without this
+# the IMS service reports MMTEL unavailable and VoLTE never registers.
+allow priv_app hal_telephony_hwservice:hwservice_manager find;
