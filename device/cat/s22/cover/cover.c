@@ -12,7 +12,10 @@
  *   - lid: /sys/devices/virtual/switch_hall/hall_switch/state via kernel
  *     uevents (the hall_sensor input device never reports SW_LID);
  *   - CatS22Cover app: config.txt and state.txt (key=value) in its
- *     device-protected files directory, watched with inotify.
+ *     device-protected files directory, watched with inotify;
+ *   - volume keys: with the lid closed a press lights the screen for
+ *     timeout_s, as on stock. The input devices are read, not grabbed, so
+ *     Android still gets the keys.
  * While lit it redraws once a second and holds a self-expiring wakelock (the
  * SPI bus is power-gated in suspend).
  *
@@ -22,7 +25,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <dirent.h>
 #include <linux/fb.h>
+#include <linux/input.h>
 #include <linux/netlink.h>
 #include <poll.h>
 #include <signal.h>
@@ -575,6 +580,48 @@ static bool drain_uevents(int fd) {
     return hall;
 }
 
+#define MAX_KEY_FDS 4
+#define BIT_SET(bits, n) ((bits)[(n) / (8 * sizeof(long))] & (1UL << ((n) % (8 * sizeof(long)))))
+
+/* Opens every input device that reports KEY_VOLUMEUP or KEY_VOLUMEDOWN. */
+static int open_volume_keys(int *fds) {
+    int count = 0;
+    DIR *dir = opendir("/dev/input");
+    if (!dir) return 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) && count < MAX_KEY_FDS) {
+        if (strncmp(entry->d_name, "event", 5) != 0) continue;
+        char path[PATH_MAX];
+        snprintf(path, sizeof(path), "/dev/input/%s", entry->d_name);
+        int fd = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+        if (fd < 0) continue;
+        unsigned long keys[KEY_MAX / (8 * sizeof(long)) + 1] = {0};
+        if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys) >= 0 &&
+                (BIT_SET(keys, KEY_VOLUMEUP) || BIT_SET(keys, KEY_VOLUMEDOWN))) {
+            fds[count++] = fd;
+            note("volume_keys", entry->d_name[5] ? atoi(entry->d_name + 5) : -1);
+        } else {
+            close(fd);
+        }
+    }
+    closedir(dir);
+    return count;
+}
+
+/* True if a volume key went down. */
+static bool drain_volume_keys(int fd) {
+    bool pressed = false;
+    struct input_event ev[16];
+    ssize_t n;
+    while ((n = read(fd, ev, sizeof(ev))) > 0) {
+        for (size_t i = 0; i < (size_t)n / sizeof(ev[0]); i++)
+            if (ev[i].type == EV_KEY && ev[i].value == 1 &&
+                    (ev[i].code == KEY_VOLUMEUP || ev[i].code == KEY_VOLUMEDOWN))
+                pressed = true;
+    }
+    return pressed;
+}
+
 static bool drain_inotify(int fd) {
     char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
     bool changed = false;
@@ -624,6 +671,8 @@ int main(int argc, char **argv) {
     int uevent = open_uevent();
     int inotify = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
     int watch = -1;
+    int key_fds[MAX_KEY_FDS];
+    int key_count = open_volume_keys(key_fds);
     load_config();
     load_state();
     int lid = read_int(LID_STATE, 1);
@@ -653,8 +702,10 @@ int main(int argc, char **argv) {
             timeout = 30000;  /* app not run yet (first boot): retry the watch */
         }
 
-        struct pollfd fds[2] = {{.fd = uevent, .events = POLLIN}, {.fd = inotify, .events = POLLIN}};
-        int ready = poll(fds, 2, timeout);
+        struct pollfd fds[2 + MAX_KEY_FDS] = {{.fd = uevent, .events = POLLIN},
+                                              {.fd = inotify, .events = POLLIN}};
+        for (int i = 0; i < key_count; i++) fds[2 + i] = (struct pollfd){.fd = key_fds[i], .events = POLLIN};
+        int ready = poll(fds, 2 + key_count, timeout);
         if (ready < 0 && errno != EINTR) { note("poll_failed", errno); break; }
         if (ready <= 0) continue;
 
@@ -664,6 +715,12 @@ int main(int argc, char **argv) {
                 lid = value;
                 note("lid", lid);
                 wake_until = lid == 0 ? now_ms() + cfg.timeout_s * 1000LL : 0;
+            }
+        }
+        for (int i = 0; i < key_count; i++) {
+            if ((fds[2 + i].revents & POLLIN) && drain_volume_keys(key_fds[i]) && lid == 0) {
+                note("volume_key", 1);
+                wake_until = now_ms() + cfg.timeout_s * 1000LL;
             }
         }
         if ((fds[1].revents & POLLIN) && drain_inotify(inotify)) {

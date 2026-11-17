@@ -23,6 +23,13 @@ Never lock the bootloader again while a modified vbmeta or boot is installed.
 
 ## Install
 
+Before you start, enable *USB debugging* in Developer options so that
+`adb reboot bootloader` works, and save everything you need from the phone.
+
+Coming from stock or from any other ROM, **the data wipe in step 3 is
+required**. Skipping it keeps the old apps, settings and `/data/adb` (Magisk)
+and leads to reboots when apps are installed or removed, and to boot loops.
+
 ```bash
 # 1. Bootloader mode (fastboot getvar is-userspace -> no)
 adb reboot bootloader
@@ -33,32 +40,37 @@ fastboot flash boot boot.img
 fastboot reboot fastboot
 fastboot flash super super.img
 
-# 3. Factory reset from the stock recovery
-fastboot reboot recovery
+# 3. Wipe data, still in fastbootd
+fastboot -w
+fastboot reboot
 ```
 
-In recovery, choose **Wipe data/factory reset**, then **Reboot system now**.
-Use the stock recovery and not `fastboot -w`: `/data` must be F2FS, and
-fastboot formats it as EXT4.
+In fastbootd (and only there) `fastboot -w` just erases userdata, because
+fastbootd reports it as `raw`. It then reports an error about the missing
+`cache` partition and may exit with an error code; that is harmless, run
+`fastboot reboot` anyway. The phone formats `/data` as F2FS on the first boot,
+which takes about three minutes. Do not run `fastboot -w` in bootloader mode
+(`is-userspace -> no`): that formats EXT4.
+
+Do not rely on **Wipe data/factory reset** in the stock recovery instead: for
+one tester it left all apps and `/data/adb` in place.
+
+If the phone already runs with old data, wipe now: `adb reboot fastboot`,
+then `fastboot -w` and `fastboot reboot`.
 
 ## Update from an earlier build of this port
 
-`boot` and `vbmeta` do not change between builds; flash `super` only:
+`boot` and `vbmeta` do not change between builds; flash `super` only. Your
+data stays:
 
 ```bash
 adb reboot fastboot
 fastboot flash super super.img
-fastboot -w        # only when coming from another ROM, see below
 fastboot reboot
 ```
 
-A newer build of the same ROM keeps your data. Coming from another ROM, or
-going back to an older Android version, wipe data. In
-fastbootd (and only there), `fastboot -w` just erases userdata, because
-fastbootd reports it as `raw`; it then fails on the missing `cache` partition,
-which is harmless. The phone formats `/data` as F2FS on the next boot (about
-three minutes). Do not run `fastboot -w` in bootloader mode: that formats
-EXT4.
+Going back to an older Android version needs a wipe: add `fastboot -w`
+before `fastboot reboot`, as in step 3 above.
 
 ## First boot
 
@@ -79,7 +91,8 @@ fastboot flash system system.img
 fastboot flash vendor vendor.img
 fastboot create-logical-partition product 1221832704
 fastboot flash product product.img
-fastboot reboot recovery             # factory reset, then reboot
+fastboot -w                          # wipe data, still in fastbootd
+fastboot reboot
 ```
 
 Stock logical sizes for reference: system `0x3F91D000`, product

@@ -39,8 +39,11 @@ Facts found on the device with stock V30 kernel 4.9.227 and vendor V30.
 - Drawing over SPI needs the CPU awake: the service holds a self-expiring
   wakelock (`cat_s22_cover`, 3 s, renewed on every frame).
 - `cat_s22_cover` ([cover/cover.c](../device/cat/s22/cover/cover.c)) is a
-  small native service, no polling: it waits on hall uevents and on inotify in
-  the companion app's directory. It draws with Roboto glyphs baked in at build
+  small native service, no polling: it waits on hall uevents, on inotify in
+  the companion app's directory and on the input devices that report the
+  volume keys (`qpnp_pon` for down, `gpio_keys` for up). With the lid closed a
+  volume key press lights the screen for the configured time, as on stock;
+  the devices are read, not grabbed, so Android still gets the keys. It draws with Roboto glyphs baked in at build
   time ([tools/gen_cover_font.py](../tools/gen_cover_font.py)).
   - Lid closes: clock, date, signal/Wi-Fi/battery, missed calls and unread SMS
     (or the operator) for the configured time.

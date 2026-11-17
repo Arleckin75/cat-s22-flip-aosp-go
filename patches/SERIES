@@ -16,7 +16,7 @@ packages/apps/Launcher3 1
 packages/apps/Messaging 1
 packages/apps/Settings 4
 packages/modules/Bluetooth 8
-packages/modules/Connectivity 9
+packages/modules/Connectivity 10
 packages/modules/DeviceLock 1
 packages/modules/DnsResolver 1
 packages/modules/Wifi 1

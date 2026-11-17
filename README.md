@@ -19,7 +19,7 @@ enforcing):
 | Boot, setup, launcher | works (Android Go launcher) |
 | Touchscreen, number keys | works |
 | Main screen off/on with the lid | works |
-| Outer (cover) screen | works: clock, date, status, missed calls and SMS; wakes on new events; settings page in Settings → Display. Incoming-call screen not tested on a real call yet |
+| Outer (cover) screen | works: clock, date, status, missed calls and SMS; wakes on new events and, with the lid closed, on a volume key press; incoming and active call screens; settings page in Settings → Display |
 | Small-screen UI | no on-screen navigation bar (hardware keys), AOSP boot animation, single-line lock clock, 4×4 home grid |
 | Camera | stock CAT camera app (extracted from your V30): photo, video, front camera work |
 | Browser (WebView shell) | works |
@@ -41,7 +41,7 @@ Details and known issues are in [docs/HARDWARE.md](docs/HARDWARE.md).
 | Part | Source |
 | --- | --- |
 | Android tree | [manifest/cat-s22-aosp16.xml](manifest/cat-s22-aosp16.xml): AOSP `android-16.0.0_r2` plus TrebleDroid, every project pinned to an exact commit |
-| Source changes | [patches/](patches): 211 patches over 32 projects, applied with `git am`. These are the TrebleDroid patches from [ponces/treble_aosp](https://github.com/ponces/treble_aosp) (Apache-2.0) plus eight changes for this device |
+| Source changes | [patches/](patches): 212 patches over 32 projects, applied with `git am`. These are the TrebleDroid patches from [ponces/treble_aosp](https://github.com/ponces/treble_aosp) (Apache-2.0) plus nine changes for this device |
 | Device configuration | [device/cat/s22](device/cat/s22): product, init, SELinux, cover-screen service and settings app |
 | Hardware helpers and IMS APK | fetched at build time from [ajimsjames/cat-s22-flip-android15-fixes](https://github.com/ajimsjames/cat-s22-flip-android15-fixes) at a pinned commit. That repository has no license, so its files are not copied here |
 | Stock V30 kernel, vendor, vbmeta | rebuilt by each builder from CAT's official OTA packages; never redistributed |

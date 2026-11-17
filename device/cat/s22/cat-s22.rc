@@ -12,7 +12,7 @@ service cat_s22_keypad /system/bin/cat_s22_keypad
 service cat_s22_outer /system/bin/cat_s22_cover
     class late_start
     user root
-    group root graphics
+    group root graphics input
     seclabel u:r:su:s0
     disabled
 
