@@ -139,7 +139,11 @@ Facts found on the device with stock V30 kernel 4.9.227 and vendor V30.
   52 MB, MemAvailable 957 MB, no kills, all apps survived. Not repeated on
   Android 16 yet. The CAT camera takes about 1.7 s to open.
 
-## Small screen (480×640, 200 dpi)
+## Small screen (480×640, 170 dpi)
+
+- Density is 170 dpi (about 452×602 dp). Stock used 240 dpi with layouts
+  made for it; Android 16 layouts squeezed at 200 dpi: the PIN pad clipped its
+  digits and many menus overlapped.
 
 - The phone has hardware Back/Home/Recents keys.
   - TrebleDroid turns the on-screen bar on by default through

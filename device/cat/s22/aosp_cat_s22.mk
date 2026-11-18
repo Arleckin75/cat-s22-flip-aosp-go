@@ -24,5 +24,7 @@ TARGET_USES_PREBUILT_VENDOR_SEPOLICY := true
 PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 BOARD_EXT4_SHARE_DUP_BLOCKS := true
-PRODUCT_SYSTEM_PROPERTIES += ro.sf.lcd_density=200
+# 480x640 panel. Stock used 240 dpi with its own layouts; Android 16 layouts
+# squeeze at 200 (clipped PIN pad digits, overlapping menus), 170 fits.
+PRODUCT_SYSTEM_PROPERTIES += ro.sf.lcd_density=170
 $(call inherit-product, device/cat/s22/adaptation.mk)
