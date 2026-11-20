@@ -20,6 +20,7 @@ import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -45,6 +46,8 @@ final class StateTracker {
     private int mSms = -1;
     private int mSignal = -1;
     private boolean mInService;
+    private Callback mCallback;
+    private int mCallbackSubId = Integer.MIN_VALUE;
 
     StateTracker(Context context) {
         mContext = context;
@@ -62,20 +65,43 @@ final class StateTracker {
     }
 
     private void startOnThread() {
-        TelephonyManager tm = mContext.getSystemService(TelephonyManager.class);
+        // The app starts at boot, often before the SIM is ready (a SIM PIN, for
+        // one). A callback registered then stays on no subscription and never
+        // reports calls, so register again whenever the subscriptions change.
+        registerTelephonyCallback();
         try {
-            tm.registerTelephonyCallback(mHandler::post, new Callback());
+            mContext.getSystemService(SubscriptionManager.class).addOnSubscriptionsChangedListener(
+                    mHandler::post, new SubscriptionManager.OnSubscriptionsChangedListener() {
+                        @Override
+                        public void onSubscriptionsChanged() {
+                            registerTelephonyCallback();
+                        }
+                    });
         } catch (SecurityException e) {
-            Log.w(TAG, "telephony callback", e);
+            Log.w(TAG, "subscriptions listener", e);
         }
 
-        // The number of an incoming call is only delivered with this broadcast.
+        // The call state also comes with this broadcast, independent of any
+        // subscription; the number of an incoming call only comes with it.
         IntentFilter phone = new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                // Android sends this twice per change: once without the number
+                // (READ_PHONE_STATE) and once with it (READ_CALL_LOG). The second
+                // one repeats the state, so it must still update the number.
                 String number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                if (!TextUtils.isEmpty(number)) {
+                String extra = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+                if (TelephonyManager.EXTRA_STATE_RINGING.equals(extra)) {
+                    onCallState(TelephonyManager.CALL_STATE_RINGING);
+                } else if (TelephonyManager.EXTRA_STATE_OFFHOOK.equals(extra)) {
+                    onCallState(TelephonyManager.CALL_STATE_OFFHOOK);
+                } else if (TelephonyManager.EXTRA_STATE_IDLE.equals(extra)) {
+                    onCallState(TelephonyManager.CALL_STATE_IDLE);
+                }
+                if (!TextUtils.isEmpty(number)
+                        && mCallState != TelephonyManager.CALL_STATE_IDLE
+                        && !number.equals(mIncomingNumber)) {
                     mIncomingNumber = number;
                     updateCall();
                 }
@@ -129,21 +155,45 @@ final class StateTracker {
         updateSignal();
     }
 
+    private void registerTelephonyCallback() {
+        int subId = SubscriptionManager.getDefaultSubscriptionId();
+        if (subId == mCallbackSubId && mCallback != null) return;
+        TelephonyManager base = mContext.getSystemService(TelephonyManager.class);
+        if (mCallback != null) base.unregisterTelephonyCallback(mCallback);
+        TelephonyManager tm = SubscriptionManager.isValidSubscriptionId(subId)
+                ? base.createForSubscriptionId(subId) : base;
+        mCallback = new Callback();
+        mCallbackSubId = subId;
+        try {
+            tm.registerTelephonyCallback(mHandler::post, mCallback);
+            Log.i(TAG, "telephony callback on subscription " + subId);
+        } catch (SecurityException e) {
+            Log.w(TAG, "telephony callback", e);
+        }
+    }
+
+    /** Both the callback and the broadcast report calls; repeats are ignored. */
+    private void onCallState(int state) {
+        int previous = mCallState;
+        if (state == previous) return;
+        mCallState = state;
+        Log.i(TAG, "call state " + previous + " -> " + state);
+        if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+            mState.put("call_since", String.valueOf(System.currentTimeMillis()));
+        }
+        if (state == TelephonyManager.CALL_STATE_IDLE) mIncomingNumber = "";
+        updateCall();
+        if (state == TelephonyManager.CALL_STATE_IDLE) refreshCounts();
+    }
+
     private final class Callback extends TelephonyCallback implements
             TelephonyCallback.CallStateListener,
             TelephonyCallback.SignalStrengthsListener,
             TelephonyCallback.ServiceStateListener {
         @Override
         public void onCallStateChanged(int state) {
-            int previous = mCallState;
-            mCallState = state;
-            if (state == TelephonyManager.CALL_STATE_OFFHOOK
-                    && previous != TelephonyManager.CALL_STATE_OFFHOOK) {
-                mState.put("call_since", String.valueOf(System.currentTimeMillis()));
-            }
-            if (state == TelephonyManager.CALL_STATE_IDLE) mIncomingNumber = "";
-            updateCall();
-            if (state == TelephonyManager.CALL_STATE_IDLE) refreshCounts();
+            if (this != mCallback) return;
+            onCallState(state);
         }
 
         @Override
