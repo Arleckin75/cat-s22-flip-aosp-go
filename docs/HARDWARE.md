@@ -43,7 +43,13 @@ Facts found on the device with stock V30 kernel 4.9.227 and vendor V30.
   the companion app's directory and on the input devices that report the
   volume keys (`qpnp_pon` for down, `gpio_keys` for up). With the lid closed a
   volume key press lights the screen for the configured time, as on stock;
-  the devices are read, not grabbed, so Android still gets the keys. It draws with Roboto glyphs baked in at build
+  the devices are read, not grabbed, so Android still gets the keys.
+  - All of these are waited on with `epoll` and `EPOLLWAKEUP`. With plain
+    `poll()` a call or key press that woke the phone from suspend could let it
+    suspend again before the service ran, and the cover stayed dark. The lid
+    state is also re-read on every pass.
+  - The service logs to logcat under the tag `CatS22CoverSvc`
+    (`adb logcat -s CatS22CoverSvc`): lid, volume key, call and screen on/off. It draws with Roboto glyphs baked in at build
   time ([tools/gen_cover_font.py](../tools/gen_cover_font.py)).
   - Lid closes: clock, date, signal/Wi-Fi/battery, missed calls and unread SMS
     (or the operator) for the configured time.

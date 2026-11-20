@@ -24,6 +24,7 @@ cc_binary {
     name: "cat_s22_cover",
     defaults: ["cat_s22_native_defaults"],
     srcs: ["cover/cover.c"],
+    shared_libs: ["liblog"],
 }
 // Stock CAT camera from the builder's own V30 product partition (extracted by
 // install-device.py; proprietary, never stored in this repository). As a

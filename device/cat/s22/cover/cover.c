@@ -16,6 +16,11 @@
  *   - volume keys: with the lid closed a press lights the screen for
  *     timeout_s, as on stock. The input devices are read, not grabbed, so
  *     Android still gets the keys.
+ * Every input is waited on with EPOLLWAKEUP, so a key press, lid change or
+ * call that wakes the phone from suspend keeps it awake until it is handled
+ * (with plain poll() the phone could suspend again first and the screen
+ * stayed dark). The lid state is also re-read on every pass, so a lost uevent
+ * cannot leave the service thinking the lid is open.
  * While lit it redraws once a second and holds a self-expiring wakelock (the
  * SPI bus is power-gated in suspend).
  *
@@ -25,6 +30,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <android/log.h>
 #include <dirent.h>
 #include <linux/fb.h>
 #include <linux/input.h>
@@ -36,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/inotify.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -98,9 +105,9 @@ static int64_t now_ms(void) {
     return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
+/* Events go to logcat (tag CatS22CoverSvc): init gives the service no stderr. */
 static void note(const char *event, long long value) {
-    fprintf(stderr, "cover t=%lld event=%s value=%lld\n", (long long)now_ms(), event, value);
-    fflush(stderr);
+    __android_log_print(ANDROID_LOG_INFO, "CatS22CoverSvc", "%s=%lld", event, value);
 }
 
 static void write_node(const char *path, const char *value) {
@@ -681,7 +688,25 @@ int main(int argc, char **argv) {
     long long prev_seq = st.seq;
     note("start_lid", lid);
 
+    /* EPOLLWAKEUP needs CAP_BLOCK_SUSPEND; the service runs as root. */
+    int epoll = epoll_create1(EPOLL_CLOEXEC);
+    struct epoll_event ev = {.events = EPOLLIN | EPOLLWAKEUP};
+    ev.data.fd = uevent;
+    if (uevent >= 0) epoll_ctl(epoll, EPOLL_CTL_ADD, uevent, &ev);
+    ev.data.fd = inotify;
+    if (inotify >= 0) epoll_ctl(epoll, EPOLL_CTL_ADD, inotify, &ev);
+    for (int i = 0; i < key_count; i++) {
+        ev.data.fd = key_fds[i];
+        epoll_ctl(epoll, EPOLL_CTL_ADD, key_fds[i], &ev);
+    }
+
     while (!stopping) {
+        int lid_now = read_int(LID_STATE, lid);
+        if (lid_now != lid) {
+            lid = lid_now;
+            note("lid", lid);
+            wake_until = lid == 0 ? now_ms() + cfg.timeout_s * 1000LL : 0;
+        }
         if (watch < 0 && inotify >= 0) {
             watch = inotify_add_watch(inotify, app_dir, IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE_SELF);
             if (watch >= 0) { load_config(); load_state(); }
@@ -702,28 +727,25 @@ int main(int argc, char **argv) {
             timeout = 30000;  /* app not run yet (first boot): retry the watch */
         }
 
-        struct pollfd fds[2 + MAX_KEY_FDS] = {{.fd = uevent, .events = POLLIN},
-                                              {.fd = inotify, .events = POLLIN}};
-        for (int i = 0; i < key_count; i++) fds[2 + i] = (struct pollfd){.fd = key_fds[i], .events = POLLIN};
-        int ready = poll(fds, 2 + key_count, timeout);
-        if (ready < 0 && errno != EINTR) { note("poll_failed", errno); break; }
+        struct epoll_event events[2 + MAX_KEY_FDS];
+        int ready = epoll_wait(epoll, events, 2 + MAX_KEY_FDS, timeout);
+        if (ready < 0 && errno != EINTR) { note("epoll_failed", errno); break; }
         if (ready <= 0) continue;
 
-        if ((fds[0].revents & POLLIN) && drain_uevents(uevent)) {
-            int value = read_int(LID_STATE, lid);
-            if (value != lid) {
-                lid = value;
-                note("lid", lid);
-                wake_until = lid == 0 ? now_ms() + cfg.timeout_s * 1000LL : 0;
-            }
+        bool uevent_ready = false, inotify_ready = false, key_pressed = false;
+        for (int n = 0; n < ready; n++) {
+            int fd = events[n].data.fd;
+            if (fd == uevent) uevent_ready = true;
+            else if (fd == inotify) inotify_ready = true;
+            else if (drain_volume_keys(fd)) key_pressed = true;
         }
-        for (int i = 0; i < key_count; i++) {
-            if ((fds[2 + i].revents & POLLIN) && drain_volume_keys(key_fds[i]) && lid == 0) {
-                note("volume_key", 1);
-                wake_until = now_ms() + cfg.timeout_s * 1000LL;
-            }
+        if (uevent_ready) drain_uevents(uevent);  /* lid is re-read at the top */
+        if (key_pressed) {
+            lid = read_int(LID_STATE, lid);
+            note("volume_key", lid);
+            if (lid == 0) wake_until = now_ms() + cfg.timeout_s * 1000LL;
         }
-        if ((fds[1].revents & POLLIN) && drain_inotify(inotify)) {
+        if (inotify_ready && drain_inotify(inotify)) {
             if (access(app_dir, F_OK) != 0 && watch >= 0) {
                 inotify_rm_watch(inotify, watch);
                 watch = -1;
