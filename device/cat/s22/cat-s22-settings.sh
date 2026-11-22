@@ -19,3 +19,19 @@ if [ "$(getprop persist.cat.s22.ui_defaults)" != "1" ]; then
         sleep 3
     done
 fi
+
+# The default SMS app needs RECEIVE_WAP_PUSH and READ_CELL_BROADCASTS, or
+# SmsApplication stops treating it as default and SMS cannot be sent. The SMS
+# role grants them on a first install, but not after an update to a build that
+# newly requests them (GitHub issue #1). Grant them to the role holder if
+# missing; a user who picked another SMS app is left alone.
+sms_app=$(cmd role get-role-holders android.app.role.SMS 2>/dev/null)
+if [ "$sms_app" = "com.android.messaging" ]; then
+    for perm in RECEIVE_WAP_PUSH READ_CELL_BROADCASTS; do
+        if ! dumpsys package com.android.messaging \
+                | grep -q "android.permission.$perm: granted=true"; then
+            pm grant com.android.messaging android.permission.$perm \
+                && log -t cat-s22-settings "granted $perm to com.android.messaging"
+        fi
+    done
+fi

@@ -575,14 +575,23 @@ static int open_uevent(void) {
     return fd;
 }
 
-static bool drain_uevents(int fd) {
+/* Drains kernel uevents. Returns true for a hall switch event; sets
+ * *input_added when an input event device appeared (a key device that its
+ * driver re-created must be opened again). */
+static bool drain_uevents(int fd, bool *input_added) {
     bool hall = false;
     char buf[4096];
     ssize_t n;
     while ((n = recv(fd, buf, sizeof(buf) - 1, 0)) > 0) {
         buf[n] = 0;
-        for (ssize_t i = 0; i < n; i += strlen(buf + i) + 1)
+        bool add = false, input = false, event_dev = false;
+        for (ssize_t i = 0; i < n; i += strlen(buf + i) + 1) {
             if (strstr(buf + i, "hall")) hall = true;
+            if (!strcmp(buf + i, "ACTION=add")) add = true;
+            if (!strcmp(buf + i, "SUBSYSTEM=input")) input = true;
+            if (!strncmp(buf + i, "DEVNAME=input/event", 19)) event_dev = true;
+        }
+        if (add && input && event_dev && input_added) *input_added = true;
     }
     return hall;
 }
@@ -613,6 +622,34 @@ static int open_volume_keys(int *fds) {
     }
     closedir(dir);
     return count;
+}
+
+/* (Re)opens the volume key devices and puts them in the epoll set. */
+static void watch_volume_keys(int epoll, int *fds, int *count) {
+    for (int i = 0; i < *count; i++) {
+        epoll_ctl(epoll, EPOLL_CTL_DEL, fds[i], NULL);
+        close(fds[i]);
+    }
+    *count = open_volume_keys(fds);
+    struct epoll_event ev = {.events = EPOLLIN | EPOLLWAKEUP};
+    for (int i = 0; i < *count; i++) {
+        ev.data.fd = fds[i];
+        epoll_ctl(epoll, EPOLL_CTL_ADD, fds[i], &ev);
+    }
+}
+
+/* Removes a key device that went away: left in the epoll set, its EPOLLERR /
+ * EPOLLHUP would wake epoll_wait on every pass and, with EPOLLWAKEUP, keep the
+ * phone from suspending. */
+static void drop_volume_key(int epoll, int *fds, int *count, int fd) {
+    for (int i = 0; i < *count; i++) {
+        if (fds[i] != fd) continue;
+        epoll_ctl(epoll, EPOLL_CTL_DEL, fd, NULL);
+        close(fd);
+        fds[i] = fds[--*count];
+        note("volume_keys_lost", fd);
+        return;
+    }
 }
 
 /* True if a volume key went down. */
@@ -679,7 +716,7 @@ int main(int argc, char **argv) {
     int inotify = inotify_init1(IN_NONBLOCK | IN_CLOEXEC);
     int watch = -1;
     int key_fds[MAX_KEY_FDS];
-    int key_count = open_volume_keys(key_fds);
+    int key_count = 0;
     load_config();
     load_state();
     int lid = read_int(LID_STATE, 1);
@@ -695,10 +732,7 @@ int main(int argc, char **argv) {
     if (uevent >= 0) epoll_ctl(epoll, EPOLL_CTL_ADD, uevent, &ev);
     ev.data.fd = inotify;
     if (inotify >= 0) epoll_ctl(epoll, EPOLL_CTL_ADD, inotify, &ev);
-    for (int i = 0; i < key_count; i++) {
-        ev.data.fd = key_fds[i];
-        epoll_ctl(epoll, EPOLL_CTL_ADD, key_fds[i], &ev);
-    }
+    watch_volume_keys(epoll, key_fds, &key_count);
 
     while (!stopping) {
         int lid_now = read_int(LID_STATE, lid);
@@ -733,13 +767,22 @@ int main(int argc, char **argv) {
         if (ready <= 0) continue;
 
         bool uevent_ready = false, inotify_ready = false, key_pressed = false;
+        int gone[2 + MAX_KEY_FDS], gone_count = 0;
         for (int n = 0; n < ready; n++) {
             int fd = events[n].data.fd;
             if (fd == uevent) uevent_ready = true;
             else if (fd == inotify) inotify_ready = true;
-            else if (drain_volume_keys(fd)) key_pressed = true;
+            else {
+                if (drain_volume_keys(fd)) key_pressed = true;
+                if (events[n].events & (EPOLLERR | EPOLLHUP)) gone[gone_count++] = fd;
+            }
         }
-        if (uevent_ready) drain_uevents(uevent);  /* lid is re-read at the top */
+        for (int i = 0; i < gone_count; i++) drop_volume_key(epoll, key_fds, &key_count, gone[i]);
+        if (uevent_ready) {
+            bool input_added = false;
+            drain_uevents(uevent, &input_added);  /* lid is re-read at the top */
+            if (input_added) watch_volume_keys(epoll, key_fds, &key_count);
+        }
         if (key_pressed) {
             lid = read_int(LID_STATE, lid);
             note("volume_key", lid);
