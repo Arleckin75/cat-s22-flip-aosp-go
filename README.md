@@ -34,7 +34,9 @@ enforcing):
 | Battery life | not measured |
 | Google apps | not included; [microG](docs/MICROG.md) can be installed for push notifications |
 
-Details and known issues are in [docs/HARDWARE.md](docs/HARDWARE.md).
+Details and known issues are in [docs/HARDWARE.md](docs/HARDWARE.md); how
+each build is tested and what was checked on which commit is in
+[docs/TESTING.md](docs/TESTING.md).
 
 ## How it is put together
 
