@@ -6,7 +6,7 @@ build/make 3
 build/soong 1
 external/selinux 12
 frameworks/av 25
-frameworks/base 56
+frameworks/base 57
 frameworks/native 16
 frameworks/opt/net/ims 1
 frameworks/opt/telephony 13

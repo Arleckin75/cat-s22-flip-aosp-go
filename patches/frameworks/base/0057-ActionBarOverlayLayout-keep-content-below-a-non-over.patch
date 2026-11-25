@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CAT S22 build <builder@localhost>
+Date: Wed, 25 Nov 2026 16:14:25 +0000
+Subject: [PATCH] ActionBarOverlayLayout: keep content below a non-overlay
+ action bar edge to edge
+
+Since Android 15 windows are edge to edge. ActionBarOverlayLayout then only
+reports the action bar height in the insets it dispatches and leaves the
+content at the top of the window, so apps that never inset themselves for
+the action bar (Emergency Info and other AOSP apps) show their first item
+under the title. When the action bar is not in overlay mode, put the
+content below it and remove that area from the dispatched insets, as for
+windows that fit system windows. Windows that ask for a stable layout
+(Settings) or hide the action bar keep the AOSP behaviour.
+
+Change-Id: I1670951a6635674dd01bf5f9e63ea202ae73ae56
+
+diff --git a/core/java/com/android/internal/widget/ActionBarOverlayLayout.java b/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
+index ff57fd4fe..2415f3a87 100644
+--- a/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
++++ b/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
+@@ -503,6 +503,18 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
+             }
+             // Content view has been shrunk, shrink all insets to match.
+             mInnerInsets = mInnerInsets.inset(0 /* left */, topInset, 0 /* right */, bottomInset);
++        } else if (!mOverlayMode && !stable && !mDecorFitsSystemWindows
++                && mActionBarTop.getVisibility() != GONE) {
++            // Edge-to-edge window (enforced from Android 15) that did not ask for an
++            // overlaid action bar: the action bar already covers the system bars, so keep
++            // the content below it instead of leaving the first item under the title, and
++            // tell the content that the area is taken. Older apps (Emergency Info and other
++            // AOSP apps on small screens) never inset themselves for the action bar.
++            // Windows with LAYOUT_STABLE (Settings) and hidden action bars keep the AOSP
++            // behaviour: there the reserved height does not mean a visible bar.
++            mContentInsets.top = Math.max(mContentInsets.top, topInset);
++            mContentInsets.bottom = Math.max(mContentInsets.bottom, bottomInset);
++            mInnerInsets = mInnerInsets.inset(0 /* left */, topInset, 0 /* right */, bottomInset);
+         } else {
+             // Add ActionBar to system window inset, but leave other insets untouched.
+             if (mActionBarExtendsIntoSystemInsets) {
