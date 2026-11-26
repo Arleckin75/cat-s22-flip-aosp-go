@@ -30,6 +30,7 @@ enforcing):
 | Calls, SMS | incoming and outgoing calls work; answering by opening the lid works; SMS are sent and received. On A1 Bulgaria SMS are sent over CS: over IMS the network does not answer for about a minute |
 | VoWiFi | works on A1 Bulgaria: IMS registers over Wi-Fi while the phone is on the mobile network, calls in both directions. Registering over Wi-Fi in airplane mode failed |
 | Keypad backlight | works: on while the lid is open and the screen is on |
+| GPS | the stock GNSS HAL runs and the receiver sees satellites (indoors: 22 known, 5 with signal); a position fix has not been tested yet, and the XTRA assistance download failed |
 | Memory | Android Go profile (see [docs/HARDWARE.md](docs/HARDWARE.md)) |
 | Battery life | not measured |
 | Google apps | not included; [microG](docs/MICROG.md) can be installed for push notifications |

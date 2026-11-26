@@ -49,6 +49,8 @@ All on A1 Bulgaria (MCC 284, MNC 01) unless noted.
 | 2026-11-18 | b3be0ee | cover settings page: first switch visible below the title; 170 dpi chosen on the phone |
 | 2026-11-20 | ab8a60e | after 5 and 11 minutes of suspend, a volume key lights the cover within 0.5 s |
 | 2026-11-21 | a43030d | after 7 minutes of suspend, an incoming call lights the cover within 0.5 s and shows the caller's number |
+| 2026-11-26 | de84ea5 | tester's phone, real SIM: after visiting the cover settings and closing the lid, two incoming calls showed the call screen with the caller's number (#5) |
+| 2026-11-26 | 4b0949f | all Settings pages and Emergency Info opened, scrolled down and back to the top: nothing under the title bar, checked on the screenshots |
 
 Not tested yet: a first install on a wiped phone with the current build
 (Messaging's two permissions were granted by hand on the test phone after an
