@@ -11,19 +11,47 @@ the action bar (Emergency Info and other AOSP apps) show their first item
 under the title. When the action bar is not in overlay mode, put the
 content below it and remove that area from the dispatched insets, as for
 windows that fit system windows. Windows that ask for a stable layout
-(Settings) or hide the action bar keep the AOSP behaviour.
+(Settings) or hide the action bar keep the AOSP behaviour. Only
+preinstalled apps are changed: installed apps that target Android 15 inset
+themselves, and doing it here as well left a double gap (Total Commander).
 
 Change-Id: I1670951a6635674dd01bf5f9e63ea202ae73ae56
 
 diff --git a/core/java/com/android/internal/widget/ActionBarOverlayLayout.java b/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
-index ff57fd4fe..2415f3a87 100644
+index ff57fd4fe..89cda6ce2 100644
 --- a/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
 +++ b/core/java/com/android/internal/widget/ActionBarOverlayLayout.java
-@@ -503,6 +503,18 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
+@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter;
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.content.Context;
+ import android.content.pm.ActivityInfo;
++import android.content.pm.ApplicationInfo;
+ import android.content.res.Configuration;
+ import android.content.res.TypedArray;
+ import android.graphics.Canvas;
+@@ -86,6 +87,8 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
+     private WindowInsets mLastInnerInsets = WindowInsets.CONSUMED;
+     private boolean mDecorFitsSystemWindows = true;
+     private boolean mActionBarExtendsIntoSystemInsets = false;
++    // Preinstalled app: may predate edge to edge and not inset itself for the action bar.
++    private boolean mSystemApp;
+ 
+     private ActionBarVisibilityCallback mActionBarVisibilityCallback;
+ 
+@@ -191,6 +194,8 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
+         mIgnoreWindowContentOverlay = context.getApplicationInfo().targetSdkVersion <
+                 Build.VERSION_CODES.KITKAT;
+ 
++        mSystemApp = (context.getApplicationInfo().flags & ApplicationInfo.FLAG_SYSTEM) != 0;
++
+         mFlingEstimator = new OverScroller(context);
+     }
+ 
+@@ -503,6 +508,20 @@ public class ActionBarOverlayLayout extends ViewGroup implements DecorContentPar
              }
              // Content view has been shrunk, shrink all insets to match.
              mInnerInsets = mInnerInsets.inset(0 /* left */, topInset, 0 /* right */, bottomInset);
-+        } else if (!mOverlayMode && !stable && !mDecorFitsSystemWindows
++        } else if (mSystemApp && !mOverlayMode && !stable && !mDecorFitsSystemWindows
 +                && mActionBarTop.getVisibility() != GONE) {
 +            // Edge-to-edge window (enforced from Android 15) that did not ask for an
 +            // overlaid action bar: the action bar already covers the system bars, so keep
@@ -32,6 +60,8 @@ index ff57fd4fe..2415f3a87 100644
 +            // AOSP apps on small screens) never inset themselves for the action bar.
 +            // Windows with LAYOUT_STABLE (Settings) and hidden action bars keep the AOSP
 +            // behaviour: there the reserved height does not mean a visible bar.
++            // Only preinstalled apps: installed apps that target Android 15 inset
++            // themselves, and doing it here as well doubled the gap (Total Commander).
 +            mContentInsets.top = Math.max(mContentInsets.top, topInset);
 +            mContentInsets.bottom = Math.max(mContentInsets.bottom, bottomInset);
 +            mInnerInsets = mInnerInsets.inset(0 /* left */, topInset, 0 /* right */, bottomInset);
